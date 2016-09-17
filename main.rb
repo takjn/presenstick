@@ -9,7 +9,7 @@ class Application
         Ssd1306.set_text_wrap(false)
         Key.init
         Debug.init
-        Application.set_mode(:main)
+        Application.set_mode(:setup)
     end
 
     def self.set_mode(mode)
@@ -32,10 +32,8 @@ class Application
     def run
         # splash
 
-        # presentation = Presentation.new
-        # presentation.start(15, 1)
+        presentation = Presentation.new
         setup = Setup.new
-
 
         loop do
             # キーの読み込み
@@ -44,9 +42,16 @@ class Application
 
             # 表示処理
             case @@mode
-            when :main
-                # presentation.loop(key)
+            when :setup
                 setup.loop(key)
+            when :main
+                presentation.loop(key)
+            when :start
+                presentation.start(setup.pages, setup.minutes)
+                Application.set_mode(:main)
+            when :end
+                setup = Setup.new
+                Application.set_mode(:setup)
             end
 
             delay(50)
@@ -58,86 +63,125 @@ class Application
     end
 end
 
-# class Presentation
-#     def start(pages, minutes)
-#         Debug.println("start: #{micros}")
-#         @total_page = pages
-#         @limit_micros = micros + minutes * 60 * 1000 * 1000
-#         @current_page = 0
-#         @is_pause = false
+class Presentation
+    ALERT_SECONDS = 5 # 5秒前にアラートする
+    
+    def start(pages, minutes)
+        @total_page = pages
+        @limit_micros = micros + minutes * 60 * 1000 * 1000 /2
+        @current_page = 0
+        @is_pause = false
+        @alert = false
         
-#         next_page
-#     end
+        next_page
+    end
     
-#     def finish
-#         Debug.println("end: #{micros}")
-#         Application.set_mode(:menu)
-#     end
+    def finish
+        Application.set_mode(:end)
+    end
     
-#     def loop(key)
+    def loop(key)
+        Ssd1306.clear_display;
 
-#         if micros > @next_micros and !@is_pause
-#             next_page
-#         else
-#             case key
-#             when Key::NEXT
-#                 next_page
-#             when Key::PREV
-#                 back_page
-#             when Key::SELECT
-#                 @is_pause = true
-#                 Debug.println("Paused")
-#             end
-#         end
+        if micros > @next_micros and !@is_pause
+            next_page
+        else
+            case key
+            when Key::NEXT
+                next_page
+            when Key::PREV
+                back_page
+            when Key::SELECT
+                @is_pause = true
+            end
+        end
         
-#         Ssd1306.set_text_size(2);
-#         Ssd1306.draw_text(0,62, "%d/%d" % [@current_page, @total_page])
+        Ssd1306.set_text_size(2);
+        Ssd1306.draw_text(0,62, "%d/%d" % [@current_page, @total_page])
         
-#         Ssd1306.set_text_size(3);
-#         if @is_pause
-#             Ssd1306.draw_text(0, 36, "Paused")
-#         elsif @current_page < @total_page
-#             remain = ((@next_micros - micros) / 1000000)
-#             Ssd1306.draw_text(0, 36, "%d" % [remain])
-#         end
-
-#     end
-    
-#     private
-
-#     def next_page
-#         if @current_page < @total_page
-#             @current_page += 1
-#             set_next_seconds
-#         else
-#             finish
-#         end
-#     end
-    
-#     def back_page
-#         @current_page -= 1 if @current_page > 1
-#         set_next_seconds
-#     end
-    
-#     def set_next_seconds
-#         @is_pause = false
-#         remain_page = @total_page - @current_page
-#         return if remain_page == 0
+        Ssd1306.set_text_size(3);
+        if @is_pause
+            Ssd1306.draw_text(0, 36, "Pause")
+        elsif @current_page < @total_page
+            remain = ((@next_micros - micros) / 1000000)
+            Ssd1306.draw_text(0, 36, "%d" % [remain])
+            
+            if remain < ALERT_SECONDS and !@alert
+                @alert = true
+                # TODO: 振動で通知する
+            end
+        end
         
-#         current_micros = micros
-#         micros_per_page = (@limit_micros - current_micros) / remain_page
-#         @next_micros = current_micros + micros_per_page
-#     end
+        Ssd1306.display;
+    end
+    
+    private
 
-# end
+    def next_page
+        if @current_page < @total_page
+            @current_page += 1
+            set_next_seconds
+        else
+            finish
+        end
+    end
+    
+    def back_page
+        @current_page -= 1 if @current_page > 1
+        set_next_seconds
+    end
+    
+    def set_next_seconds
+        @is_pause = false
+        @alert = false
+        
+        remain_page = @total_page - @current_page
+        return if remain_page == 0
+        
+        current_micros = micros
+        micros_per_page = (@limit_micros - current_micros) / remain_page
+        @next_micros = current_micros + micros_per_page
+    end
 
-class Setup
-    MODE = [:menu, :pages, :minutes, :ok, :cancel]
-    MENU = ["Pages", "Minutes", "OK", "Cancel"]
+end
+
+class ScreenBase
+    CENTER_X = 44
+    CENTER_Y = 37
+    MARGIN_X = 64
+    ANIMATION_STEPS = 2
+
+    def draw_window(title, subtitle)
+        Ssd1306.set_text_size(1)
+        Ssd1306.draw_text(0, 7, title)
+        Ssd1306.draw_text(0, 63, subtitle)
+    end
+    
+    def draw_cursol
+        Ssd1306.draw_line(32, 22, 32, 42)
+        Ssd1306.draw_line(32, 22, 36, 22)
+        Ssd1306.draw_line(32, 42, 36, 42)
+        
+        Ssd1306.draw_line(95, 22, 95, 42)
+        Ssd1306.draw_line(91, 22, 95, 22)
+        Ssd1306.draw_line(91, 42, 95, 42)
+
+        # Ssd1306.draw_line(0, 32, 127 , 32)
+        # Ssd1306.draw_line(63, 0, 63 , 63)
+        # Ssd1306.draw_line(0, 0, 0, 63)
+        # Ssd1306.draw_line(127, 0, 127, 63)
+    end
+end
+
+class Setup < ScreenBase
+    attr_accessor :pages, :minutes
+    
+    MODE = [:menu, :pages, :minutes, :ok]
+    MENU = ["Pages", "Minutes", "OK"]
     
     def initialize
         @cursol = 0
-        @prev_cursol = 0
+        @prev_cursol = -1
         @mode = :menu
         
         @pages = 10
@@ -152,7 +196,11 @@ class Setup
         when Key::SELECT
             case @mode
             when :menu
-                @mode = MODE[@cursol]
+                @mode = MODE[@cursol + 1]
+                if @mode == :ok
+                    Application.set_mode(:start)
+                    return
+                end
             when :pages
                 @mode = :menu
             when :minutes
@@ -176,164 +224,46 @@ class Setup
             when :pages
                 @pages -= 1 if @pages > 0
             when :minutes
-                @minutes -= 1 if @minutes > @pages > 0
+                @minutes -= 1 if @minutes > 0
             end
         end
         
-
-        CENTER_X = 44
-        CENTER_Y = 37
-        MARGIN_X = 64 
-        ANIMATION_STEPS = 2
-
-        case @mode
-        when :menu
-            return if @cursol == @prev_cursol
-            
+        menu = MENU[@cursol]
+        menu = "Set " + menu if @mode == :pages || @mode == :minutes
+        
+        if @cursol != @prev_cursol
             dx = (@cursol - @prev_cursol) * MARGIN_X / ANIMATION_STEPS
-
             x = CENTER_X - MARGIN_X * @prev_cursol
+            
             ANIMATION_STEPS.times do
                 x -= dx
-                
                 Ssd1306.clear_display;
-                Ssd1306.set_text_size(3);
-                Ssd1306.draw_text(x               , CENTER_Y, "%02d" % [@pages])
-                Ssd1306.draw_text(x + MARGIN_X * 1, CENTER_Y, "%02d" % [@minutes])
-                Ssd1306.draw_text(x + MARGIN_X * 2, CENTER_Y, "OK")
-                Ssd1306.draw_text(x + MARGIN_X * 3, CENTER_Y, "CA")
-
-                Ssd1306.set_text_size(1);
-                Ssd1306.draw_text(0, 7, "Setup")
-                Ssd1306.draw_text(0, 63, MENU[@cursol]);
-
-                Ssd1306.draw_line(0, 32, 127 , 32);
-                Ssd1306.draw_line(63, 0, 63 , 63);
-                Ssd1306.draw_line(0, 0, 0, 63);
-                Ssd1306.draw_line(127, 0, 127, 63);
-
+                draw(x, menu)
                 Ssd1306.display
             end
             
             @prev_cursol = @cursol
-
-
-        when :pages
-            Ssd1306.clear_display
-            Ssd1306.set_text_size(1);
-            Ssd1306.draw_text(0, 7, "Setup")
-
-            Ssd1306.set_text_size(1);
-            Ssd1306.set_cursor(0,36);
-            Ssd1306.print("pages: #{@pages}");
-
-            Ssd1306.set_text_size(1);
-            Ssd1306.set_cursor(0,63);
-            Ssd1306.print(MENU[@cursol]);
-
-            Ssd1306.display
-        when :minutes
-            Ssd1306.clear_display
-            Ssd1306.set_text_size(1);
-            Ssd1306.draw_text(0, 7, "Setup")
-
-
-            Ssd1306.set_text_size(1);
-            Ssd1306.set_cursor(0,36);
-            Ssd1306.print("minutes: #{@minutes}");
-
-            Ssd1306.set_text_size(1);
-            Ssd1306.set_cursor(0,63);
-            Ssd1306.print(MENU[@cursol]);
-
+        elsif key != Key::NONE
+            Ssd1306.clear_display;
+            draw(CENTER_X - MARGIN_X * @cursol, menu)
+            Ssd1306.draw_line(44, 42, 83, 42) if @mode == :pages || @mode == :minutes
             Ssd1306.display
         end
-
     end
 
-    # @@cursol = 0
+    private
+    
+    def draw(x, menu)
+        Ssd1306.set_text_size(3);
+        Ssd1306.draw_text(x               , CENTER_Y, "%02d" % [@pages])
+        Ssd1306.draw_text(x + MARGIN_X * 1, CENTER_Y, "%02d" % [@minutes])
+        Ssd1306.draw_text(x + MARGIN_X * 2, CENTER_Y, "OK")
+        # Ssd1306.draw_text(x + MARGIN_X * 3, CENTER_Y, "CA")
 
-    # def self.set_time(key)
-    #     year, month, day, hour, minute, second, weekday = Rtc.getTime
+        draw_window("Setup", menu)
+        draw_cursol
+    end
 
-    #     case key
-    #     when Key::SELECT
-    #         if @@cursol == 5
-    #             @@cursol = 0
-    #             Application.set_mode(:watch)
-    #             return
-    #         end
-
-    #         @@cursol += 1
-    #         Debug.println("cursol=#{@@cursol}")
-
-    #     when Key::NEXT, Key::PREV
-    #         end_of_month = get_end_of_month(month)
-
-    #         case @@cursol
-    #         when 0
-    #             year=   case key
-    #                     when Key::NEXT
-    #                         year + 1
-    #                     when Key::PREV
-    #                         year - 1
-    #                     end
-    #         when 1
-    #             month=  case key
-    #                     when Key::NEXT
-    #                         month < 12 ? month + 1 : 1
-    #                     when Key::PREV
-    #                         month > 1 ? month - 1 : 12
-    #                     end
-    #         when 2
-    #             day=    case key
-    #                     when Key::NEXT
-    #                         day < end_of_month ? day + 1 : 1
-    #                     when Key::PREV
-    #                         day > 1 ? day - 1 : end_of_month
-    #                     end
-    #         when 3
-    #             hour=   case key
-    #                     when Key::NEXT
-    #                         hour < 23 ? hour + 1 : 0
-    #                     when Key::PREV
-    #                         hour > 1  ? hour - 1 : 23
-    #                     end
-    #         when 4
-    #             minute= case key
-    #                     when Key::NEXT
-    #                         minute < 59 ? minute + 1 : 0
-    #                     when Key::PREV
-    #                         minute > 1  ? minute - 1 : 59
-    #                     end
-    #         when 5
-    #             second = 0
-    #         end
-
-    #         Rtc.setTime([year, month, day, hour, minute, second])
-    #     end
-
-    #     # カーソルの表示
-    #     case @@cursol
-    #     when 0
-    #         Ssd1306.draw_line(77, 6, 105-1 , 6);
-    #     when 1
-    #         Ssd1306.draw_line(49, 6, 70-1 , 6);
-    #     when 2
-    #         Ssd1306.draw_line(28, 6, 42-1 , 6);
-    #     when 3
-    #         Ssd1306.draw_line(0, 40, 38, 40);
-    #     when 4
-    #         Ssd1306.draw_line(51, 40, 88, 40);
-    #     when 5
-    #         Ssd1306.draw_line(93, 40, 119, 40);
-    #     end
-
-    #     # モードの表示
-    #     Ssd1306.set_text_size(1);
-    #     Ssd1306.set_cursor(0,63);
-    #     Ssd1306.print(MODE[@@cursol]);
-    # end
 end
 
 
