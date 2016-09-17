@@ -8,6 +8,7 @@ class Application
         Ssd1306.begin(0x3C)
         Ssd1306.set_text_wrap(false)
         Key.init
+        Buzzer.init
         Debug.init
         Application.set_mode(:setup)
     end
@@ -54,7 +55,7 @@ class Application
                 Application.set_mode(:setup)
             end
 
-            delay(50)
+            delay(20)
         end
 
         # 終了処理
@@ -65,13 +66,16 @@ end
 
 class Presentation
     ALERT_SECONDS = 5 # 5秒前にアラートする
+    BREAK_LIMIT = 20 # 一時停止から強制終了までのしきい値
     
     def start(pages, minutes)
         @total_page = pages
-        @limit_micros = micros + minutes * 60 * 1000 * 1000 /2
+        @limit_micros = micros + minutes * 60 * 1000 * 1000
         @current_page = 0
+        
         @is_pause = false
         @alert = false
+        @break_counter = 0
         
         next_page
     end
@@ -93,6 +97,10 @@ class Presentation
                 back_page
             when Key::SELECT
                 @is_pause = true
+                @break_counter += 1
+                finish if @break_counter > BREAK_LIMIT
+            else
+                @break_counter = 0
             end
         end
         
@@ -108,7 +116,7 @@ class Presentation
             
             if remain < ALERT_SECONDS and !@alert
                 @alert = true
-                # TODO: 振動で通知する
+                Buzzer.beep
             end
         end
         
@@ -134,7 +142,7 @@ class Presentation
     def set_next_seconds
         @is_pause = false
         @alert = false
-        
+
         remain_page = @total_page - @current_page
         return if remain_page == 0
         
@@ -513,6 +521,32 @@ class Key
         return NEXT if digitalRead(PIN_NEXT) == LOW
         return BREAK if digitalRead(PIN_BREAK) == LOW
         NONE
+    end
+end
+
+class Buzzer
+    # pin mode constant
+    OUTPUT = 0x1
+    
+    # pin definition
+    PIN_BUZZER = 17 # pin for buzzer
+    PIN_VIB = 16 # pin for buzzer
+
+    DURATION = 100
+    TONE = 3300
+    
+    def self.init
+        pinMode(PIN_BUZZER, OUTPUT)    # set pin to putput
+        pinMode(PIN_VIB, OUTPUT)
+    end
+    
+    def self.beep
+        digitalWrite(PIN_VIB, 1)
+        3.times do
+            tone(PIN_BUZZER, TONE, DURATION)
+            delay(DURATION)
+        end
+        digitalWrite(PIN_VIB, 0)
     end
 end
 
