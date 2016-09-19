@@ -21,18 +21,7 @@ class Application
         @@mode == mode
     end
     
-    def splash
-        Ssd1306.clear_display
-        Ssd1306.set_text_size(1)
-        Ssd1306.draw_text(0, 36, "PRESENStick")
-        Ssd1306.display
-
-        delay(1000)
-    end
-
     def run
-        # splash
-
         presentation = Presentation.new
         setup = Setup.new
 
@@ -66,7 +55,7 @@ end
 
 class Presentation
     ALERT_SECONDS = 5 # 5秒前にアラートする
-    BREAK_LIMIT = 20 # 一時停止から強制終了までのしきい値
+    BREAK_LIMIT = 10 # 一時停止から強制終了までのしきい値
     
     def start(pages, minutes)
         @total_page = pages
@@ -184,8 +173,8 @@ end
 class Setup < ScreenBase
     attr_accessor :pages, :minutes
     
-    MODE = [:menu, :pages, :minutes, :ok]
-    MENU = ["Pages", "Minutes", "OK"]
+    MODE = [:menu, :test, :pages, :minutes, :ok]
+    MENU = ["Test", "Pages", "Minutes", "OK"]
     
     def initialize
         @cursol = 0
@@ -209,6 +198,8 @@ class Setup < ScreenBase
                     Application.set_mode(:start)
                     return
                 end
+            when :test
+                @mode = :menu
             when :pages
                 @mode = :menu
             when :minutes
@@ -219,6 +210,8 @@ class Setup < ScreenBase
             when :menu
                 @cursol += 1
                 @cursol = 0 if @cursol > MENU.count - 1
+            when :test
+                BluetoothKeyboard.right_arrow
             when :pages
                 @pages += 1
             when :minutes
@@ -229,6 +222,8 @@ class Setup < ScreenBase
             when :menu
                 @cursol -= 1
                 @cursol = MENU.count - 1 if @cursol < 0
+            when :test
+                BluetoothKeyboard.left_arrow
             when :pages
                 @pages -= 1 if @pages > 0
             when :minutes
@@ -238,6 +233,7 @@ class Setup < ScreenBase
         
         menu = MENU[@cursol]
         menu = "Set " + menu if @mode == :pages || @mode == :minutes
+        menu = menu + " mode" if @mode == :test
         
         if @cursol != @prev_cursol
             dx = (@cursol - @prev_cursol) * MARGIN_X / ANIMATION_STEPS
@@ -254,7 +250,7 @@ class Setup < ScreenBase
         elsif key != Key::NONE
             Ssd1306.clear_display;
             draw(CENTER_X - MARGIN_X * @cursol, menu)
-            Ssd1306.draw_line(44, 42, 83, 42) if @mode == :pages || @mode == :minutes
+            Ssd1306.draw_line(44, 46, 83, 46) if @mode == :test || @mode == :pages || @mode == :minutes
             Ssd1306.display
         end
     end
@@ -262,13 +258,16 @@ class Setup < ScreenBase
     private
     
     def draw(x, menu)
+        Ssd1306.set_text_size(2);
+        Ssd1306.use_dingbats_font
+        Ssd1306.draw_text(x                + 6, CENTER_Y + 6, 179.chr)
+        Ssd1306.draw_text(x + MARGIN_X * 3 + 6, CENTER_Y + 6, 204.chr)
+        Ssd1306.reset_font
         Ssd1306.set_text_size(3);
-        Ssd1306.draw_text(x               , CENTER_Y, "%02d" % [@pages])
-        Ssd1306.draw_text(x + MARGIN_X * 1, CENTER_Y, "%02d" % [@minutes])
-        Ssd1306.draw_text(x + MARGIN_X * 2, CENTER_Y, "OK")
-        # Ssd1306.draw_text(x + MARGIN_X * 3, CENTER_Y, "CA")
+        Ssd1306.draw_text(x + MARGIN_X * 1, CENTER_Y, "%02d" % [@pages])
+        Ssd1306.draw_text(x + MARGIN_X * 2, CENTER_Y, "%02d" % [@minutes])
 
-        draw_window("Setup", menu)
+        draw_window("PRESENStick", menu)
         draw_cursol
     end
 
@@ -547,6 +546,16 @@ class Buzzer
             delay(DURATION)
         end
         digitalWrite(PIN_VIB, 0)
+    end
+end
+
+class BluetoothKeyboard
+    def self.right_arrow
+        Debug.println("next")
+    end
+
+    def self.left_arrow
+        Debug.println("prev")
     end
 end
 
