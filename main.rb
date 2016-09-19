@@ -53,13 +53,36 @@ class Application
     end
 end
 
-class Presentation
+class ScreenBase
+    CENTER_X = 44
+    CENTER_Y = 37
+    MARGIN_X = 64
+    ANIMATION_STEPS = 2
+
+    def draw_window(title, subtitle)
+        Ssd1306.set_text_size(1)
+        Ssd1306.draw_text(0, 7, title)
+        Ssd1306.draw_text(0, 63, subtitle)
+    end
+    
+    def draw_cursol
+        Ssd1306.draw_line(32, 22, 32, 42)
+        Ssd1306.draw_line(32, 22, 36, 22)
+        Ssd1306.draw_line(32, 42, 36, 42)
+        
+        Ssd1306.draw_line(95, 22, 95, 42)
+        Ssd1306.draw_line(91, 22, 95, 22)
+        Ssd1306.draw_line(91, 42, 95, 42)
+    end
+end
+
+class Presentation < ScreenBase
     ALERT_SECONDS = 5 # 5秒前にアラートする
     BREAK_LIMIT = 10 # 一時停止から強制終了までのしきい値
     
     def start(pages, minutes)
         @total_page = pages
-        @limit_micros = micros + minutes * 60 * 1000 * 1000
+        @limit_micros = micros + minutes * 60_000_000
         @current_page = 0
         
         @is_pause = false
@@ -93,21 +116,22 @@ class Presentation
             end
         end
         
-        Ssd1306.set_text_size(2);
-        Ssd1306.draw_text(0,62, "%d/%d" % [@current_page, @total_page])
-        
         Ssd1306.set_text_size(3);
         if @is_pause
-            Ssd1306.draw_text(0, 36, "Pause")
+            Ssd1306.draw_text(0, CENTER_Y, "Pause")
         elsif @current_page < @total_page
-            remain = ((@next_micros - micros) / 1000000)
-            Ssd1306.draw_text(0, 36, "%d" % [remain])
-            
-            if remain < ALERT_SECONDS and !@alert
+            remain = (@next_micros - micros)
+            b_w = (123 * remain / @micros_per_page).round
+            Ssd1306.draw_rect(0, 22, 127, 20)
+            Ssd1306.fill_rect(2, 24, b_w, 16)
+
+            if remain < ALERT_SECONDS * 1_000_000 and !@alert
                 @alert = true
                 Buzzer.beep
             end
         end
+        
+        draw_window("Presentation Mode", "%d/%d" % [@current_page, @total_page])
         
         Ssd1306.display;
     end
@@ -136,46 +160,19 @@ class Presentation
         return if remain_page == 0
         
         current_micros = micros
-        micros_per_page = (@limit_micros - current_micros) / remain_page
-        @next_micros = current_micros + micros_per_page
+        @micros_per_page = (@limit_micros - current_micros) / remain_page
+        @next_micros = current_micros + @micros_per_page
     end
 
-end
-
-class ScreenBase
-    CENTER_X = 44
-    CENTER_Y = 37
-    MARGIN_X = 64
-    ANIMATION_STEPS = 2
-
-    def draw_window(title, subtitle)
-        Ssd1306.set_text_size(1)
-        Ssd1306.draw_text(0, 7, title)
-        Ssd1306.draw_text(0, 63, subtitle)
-    end
-    
-    def draw_cursol
-        Ssd1306.draw_line(32, 22, 32, 42)
-        Ssd1306.draw_line(32, 22, 36, 22)
-        Ssd1306.draw_line(32, 42, 36, 42)
-        
-        Ssd1306.draw_line(95, 22, 95, 42)
-        Ssd1306.draw_line(91, 22, 95, 22)
-        Ssd1306.draw_line(91, 42, 95, 42)
-
-        # Ssd1306.draw_line(0, 32, 127 , 32)
-        # Ssd1306.draw_line(63, 0, 63 , 63)
-        # Ssd1306.draw_line(0, 0, 0, 63)
-        # Ssd1306.draw_line(127, 0, 127, 63)
-    end
 end
 
 class Setup < ScreenBase
     attr_accessor :pages, :minutes
     
     MODE = [:menu, :test, :pages, :minutes, :ok]
-    MENU = ["Test", "Pages", "Minutes", "OK"]
-    
+    MENU = ["Connection Test", "Pages", "Minutes", "Presentation Start"]
+    MENU_TITLE = ["Test Mode", "Set Pages", "Set Minutes", "Presentation Mode"]
+
     def initialize
         @cursol = 0
         @prev_cursol = -1
@@ -232,9 +229,8 @@ class Setup < ScreenBase
         end
         
         menu = MENU[@cursol]
-        menu = "Set " + menu if @mode == :pages || @mode == :minutes
-        menu = menu + " mode" if @mode == :test
-        
+        menu = MENU_TITLE[@cursol] if @mode == :test || @mode == :pages || @mode == :minutes
+
         if @cursol != @prev_cursol
             dx = (@cursol - @prev_cursol) * MARGIN_X / ANIMATION_STEPS
             x = CENTER_X - MARGIN_X * @prev_cursol
@@ -250,7 +246,7 @@ class Setup < ScreenBase
         elsif key != Key::NONE
             Ssd1306.clear_display;
             draw(CENTER_X - MARGIN_X * @cursol, menu)
-            Ssd1306.draw_line(44, 46, 83, 46) if @mode == :test || @mode == :pages || @mode == :minutes
+            Ssd1306.draw_line(44, 48, 83, 48) if @mode == :test || @mode == :pages || @mode == :minutes
             Ssd1306.display
         end
     end
@@ -260,7 +256,7 @@ class Setup < ScreenBase
     def draw(x, menu)
         Ssd1306.set_text_size(2);
         Ssd1306.use_dingbats_font
-        Ssd1306.draw_text(x                + 6, CENTER_Y + 6, 179.chr)
+        Ssd1306.draw_text(x                + 6, CENTER_Y + 8, 179.chr)
         Ssd1306.draw_text(x + MARGIN_X * 3 + 6, CENTER_Y + 6, 204.chr)
         Ssd1306.reset_font
         Ssd1306.set_text_size(3);
