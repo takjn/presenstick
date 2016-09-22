@@ -10,6 +10,7 @@ class Application
         Key.init
         Buzzer.init
         Debug.init
+        BluetoothKeyboard.init
         Application.set_mode(:setup)
     end
 
@@ -142,6 +143,7 @@ class Presentation < ScreenBase
         if @current_page < @total_page
             @current_page += 1
             set_next_seconds
+            BluetoothKeyboard.right_arrow
         else
             finish
         end
@@ -150,6 +152,7 @@ class Presentation < ScreenBase
     def back_page
         @current_page -= 1 if @current_page > 1
         set_next_seconds
+        BluetoothKeyboard.left_arrow
     end
     
     def set_next_seconds
@@ -546,12 +549,39 @@ class Buzzer
 end
 
 class BluetoothKeyboard
+    @@serial = nil
+    def self.init
+        @@serial = Serial.new(1, 9600)
+    end
     def self.right_arrow
         Debug.println("next")
+        self.send_key(0x4F)
     end
 
     def self.left_arrow
         Debug.println("prev")
+        self.send_key(0x50)
+    end
+
+    def self.send_key(key)
+      self.send_keycode(key, 0x00);
+      delay 50
+      self.send_keycode(0x00, 0x00);
+    end
+    
+    def self.send_keycode(key, modifier)
+        @@serial.write(0xFD.chr, 1) # Raw Report Mode
+        @@serial.write(0x09.chr, 1) # Length
+        @@serial.write(0x01.chr, 1) # Descriptor 0x01=Keyboard
+    
+        @@serial.write(modifier.chr, 1)
+        @@serial.write(0x00.chr, 1)
+        @@serial.write(key.chr, 1)
+        @@serial.write(0x00.chr, 1)
+        @@serial.write(0x00.chr, 1)
+        @@serial.write(0x00.chr, 1)
+        @@serial.write(0x00.chr, 1)
+        @@serial.write(0x00.chr, 1)
     end
 end
 
