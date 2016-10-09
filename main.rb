@@ -277,8 +277,8 @@ class Key
 
     # pin definition
     PIN_SELECT = 11 # pin for select button
-    PIN_PREV = 12   # pin for previous button
-    PIN_NEXT = 10   # pin for next button
+    PIN_PREV = 10   # pin for previous button
+    PIN_NEXT = 12   # pin for next button
     PIN_BREAK = 14  # pin for break button (for debug)
 
     # key code
