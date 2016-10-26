@@ -5,6 +5,8 @@ class Application
     def initialize
         Ssd1306.begin(0x3C)
         Ssd1306.set_text_wrap(false)
+        Rtc.init
+        Rtc.setTime([2016,10,27,0,0,0])
         Key.init
         Buzzer.init
         # Debug.init
@@ -78,8 +80,10 @@ class Presentation < ScreenBase
 
     def start(pages, minutes)
         @total_page = pages
-        @limit_micros = micros + minutes * 60_000_000
+        @limit_seconds = Rtc.unixtime + minutes * 60
         @current_page = 0
+
+        Debug.println("limit_seconds:#{@limit_seconds}")
 
         @is_pause = false
         @alert = false
@@ -95,7 +99,7 @@ class Presentation < ScreenBase
     def loop(key)
         Ssd1306.clear_display;
 
-        if micros > @next_micros and !@is_pause
+        if Rtc.unixtime > @next_seconds and !@is_pause
             next_page
         else
             case key
@@ -116,12 +120,12 @@ class Presentation < ScreenBase
             Ssd1306.set_text_size(3);
             Ssd1306.draw_text(0, CENTER_Y, "Pause")
         elsif @current_page < @total_page
-            remain = (@next_micros - micros)
-            b_w = (123 * remain / @micros_per_page).round
+            remain = (@next_seconds - Rtc.unixtime)
+            b_w = (123 * remain / @seconds_per_page).round
             Ssd1306.draw_rect(0, 22, 127, 20)
             Ssd1306.fill_rect(2, 24, b_w, 16)
 
-            if remain < ALERT_SECONDS * 1_000_000 and !@alert
+            if remain < ALERT_SECONDS and !@alert
                 @alert = true
                 Buzzer.beep
             end
@@ -157,9 +161,13 @@ class Presentation < ScreenBase
         remain_page = @total_page - @current_page
         return if remain_page == 0
 
-        current_micros = micros
-        @micros_per_page = (@limit_micros - current_micros) / remain_page
-        @next_micros = current_micros + @micros_per_page
+        current_seconds = Rtc.unixtime
+        @seconds_per_page = ((@limit_seconds - current_seconds) / remain_page).round
+        @next_seconds = current_seconds + @seconds_per_page
+
+        Debug.println("current_seconds:#{current_seconds}")
+        Debug.println("seconds_per_page:#{@seconds_per_page}")
+        Debug.println("next_seconds:#{@next_seconds}")
     end
 
 end
@@ -336,15 +344,15 @@ class BluetoothKeyboard
     end
 end
 
-# class Debug
-#     @@serial = nil
-#     def self.init
-#         @@serial = Serial.new(0, 115200)
-#     end
+class Debug
+    @@serial = nil
+    def self.init
+        @@serial = Serial.new(0, 115200)
+    end
 
-#     def self.println(message)
-#         @@serial.println(message) unless @@serial.nil?
-#     end
-# end
+    def self.println(message)
+        @@serial.println(message) unless @@serial.nil?
+    end
+end
 
 Application.new.run
