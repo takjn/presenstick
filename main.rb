@@ -45,7 +45,7 @@ class Application
                 Application.set_mode(:setup)
             end
 
-            delay(20)
+            delay 20
         end
 
     end
@@ -333,7 +333,7 @@ class BluetoothKeyboard
 
     def self.send_key(key)
       self.send_keycode(key, 0x00);
-      delay 10
+      delay 5
       self.send_keycode(0x00, 0x00);
     end
 
