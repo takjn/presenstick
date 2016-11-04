@@ -2,10 +2,13 @@
 ![PRESENStick](https://github.com/takjn/presenstick/raw/master/pictures/PRESENStick.jpg)
 
 ## Hardware
-### Parts list
-ほぼすべての部品が秋月電子で購入できます。回路図はschematic.pdfをご確認ください。
+### Schematic
+回路図はschematicフォルダ内のPDFファイルをご確認ください。
 
-|記号 |パーツ	                                               　　　|補足	    |数量|
+### Parts list
+ほぼすべての部品が秋月電子通商で購入できます。
+
+|記号 |パーツ	                                               　　　|通販コード |数量|
 |:---|:----------------------------------------------------------|:----------------|:-------|
 |U1  |0.96インチ 128x64 I2C接続 OLEDディスプレイ SSD1306               |Amazonで購入可能   |1       |
 |U2  |[昇圧型DCDCコンバータ 3.3V](http://akizukidenshi.com/catalog/g/gM-05720/) |M-05720 |1       |
@@ -23,13 +26,16 @@
 |-   |[2.54mm ピンソケット](http://akizukidenshi.com/catalog/g/gC-05779/) |C-05779 |1       |
 |-   |[1.27mm ピンヘッダ](http://akizukidenshi.com/catalog/g/gC-03865/)  |C-03865 |1       |
 |-   |[1.27mm ジャンパーピン](http://akizukidenshi.com/catalog/g/gP-03912/)  |P-03912 |1       |
-|-   |タミヤ プラバン 1.0mm    |外装で利用          |1       |
-|-   |タミヤ プラ材 5mm L形棒  |外装で利用          |1       |
-|-   |天然木シート  |外装で利用          |1       |
+|外装で利用   |タミヤ プラバン 1.0mm    |-          |1       |
+|外装で利用   |タミヤ プラ材 5mm L形棒  |-          |1       |
+|外装で利用   |天然木シート  |-          |1       |
+|外装で利用   |プラスチック用接着剤、両面テープ、紙やすり  |-          |-       |
 
 
 
-## Software
+## Build instructions
+詳細な手順は準備中です。
+
 ### RN42 setup
 [RN42](http://www.microchip.com/wwwproducts/en/en558330)をシリアルでつなぎHIDモードへ設定します。
 ターミナルから以下のコマンドを入力してください。（#文字以降は入力不要）
@@ -43,3 +49,9 @@ SU,96             # 9600bps
 SN,PRESENStick    # Device name
 R,1               # reboot
 ```
+
+### GR-CITRUS mruby custom firm
+カスタマイズしたファームウェアを利用しています。firmwareフォルダにあるcitrus_sketch.binをGR-CITRUSに書き込んでください。
+
+### main.rbの書き込み
+main.rbをGR-CITRUSに書き込んでください。
