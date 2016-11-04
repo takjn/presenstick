@@ -1,5 +1,5 @@
 # PRESENStick
-![PRESENStick]()
+![PRESENStick](https://github.com/takjn/presenstick/raw/master/pictures/PRESENStick.jpg)
 
 ## Hardware
 ### Parts list
