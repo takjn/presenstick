@@ -37,8 +37,8 @@
 詳細な手順は準備中です。
 
 ### RN42 setup
-[RN42](http://www.microchip.com/wwwproducts/en/en558330)をシリアルでつなぎHIDモードへ設定します。
-ターミナルから以下のコマンドを入力してください。（#文字以降は入力不要）
+[RN42](http://www.microchip.com/wwwproducts/en/en558330)をシリアルでつなぎモード設定を行います。  
+RN42に対して以下のコマンドを入力してください。（#文字以降は入力不要）
 
 ```
 $$$               # CMD mode
@@ -50,8 +50,9 @@ SN,PRESENStick    # Device name
 R,1               # reboot
 ```
 
-### GR-CITRUS mruby custom firm
-カスタマイズしたファームウェアを利用しています。firmwareフォルダにあるcitrus_sketch.binをGR-CITRUSに書き込んでください。
+### GR-CITRUS mruby custom firmware
+カスタマイズしたファームウェアを利用しています。  
+firmwareフォルダにあるcitrus_sketch.binをGR-CITRUSに書き込んでください。
 
 ### main.rbの書き込み
 main.rbをGR-CITRUSに書き込んでください。
