@@ -1,0 +1,22 @@
+main.rb をビルドしています...成功しました
+ビルドに成功しました
+main.mrb を転送しています...成功しました
+転送に成功しました
+-------- コンソールに接続しました --------
+SETUP start
+$$$CMD
+S~,6
+AOK
+SH,0200
+AOK
+SM,6
+AOK
+SU,96
+AOK
+SN,PRESENStick
+AOK
+R,1
+Reboot!
+SETUP done
+
+-------- コンソールから切断されました --------
