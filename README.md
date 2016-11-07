@@ -6,7 +6,7 @@
 回路図はschematicフォルダ内のPDFファイルをご確認ください。
 
 ### Parts list
-ほぼすべての部品が秋月電子通商で購入できます。
+OLEDを除き、秋月電子通商で購入できます。
 
 |記号 |パーツ	                                               　　　|通販コード |数量|
 |:---|:----------------------------------------------------------|:----------------|:-------|
@@ -15,44 +15,30 @@
 |U3  |[GR-CITRUS](http://akizukidenshi.com/catalog/g/gK-11217/)  |K-11217 |1       |
 |U4  |[RN-42-I/RM](http://akizukidenshi.com/catalog/g/gM-07612/) |M-07612 |1       |
 |M1  |[振動モーター](http://akizukidenshi.com/catalog/g/gP-00933/) |P-00933 |1       |
-|B1  |[電子ブザー](http://akizukidenshi.com/catalog/g/gP-04497/)  |P-04497 |1       |
+|B1  |[電子ブザー](http://akizukidenshi.com/catalog/g/gP-09800/)  |P-09800 |1       |
 |Q1  |[Nch MOSFET 2SK4017](http://akizukidenshi.com/catalog/g/gI-07597/)  |I-07597 |1       |
 |C1  |[電解コンデンサ 100μF](http://akizukidenshi.com/catalog/g/gP-03122/)  |P-03122 |1       |
 |R1  |[抵抗 330Ω](http://akizukidenshi.com/catalog/g/gR-25331/)  |R-25331 |1       |
 |SW1,SW2,SW3    |[タクトスイッチ 6mm](http://akizukidenshi.com/catalog/g/gP-09824/)  |P-09824 |3       |
 |BT1 |[電池ボックス 単4×2本 リード線](http://akizukidenshi.com/catalog/g/gP-02245/)  |P-02245 |1       |
 |-   |[片面ユニバーサル基板 140ｘ40mm](http://akizukidenshi.com/catalog/g/gP-03250/)  |P-03250 |1       |
-|-   |[2.54mm ピンヘッダ](http://akizukidenshi.com/catalog/g/gC-00167/)  |C-00167 |1       |
-|-   |[2.54mm ピンソケット](http://akizukidenshi.com/catalog/g/gC-05779/) |C-05779 |1       |
-|-   |[1.27mm ピンヘッダ](http://akizukidenshi.com/catalog/g/gC-03865/)  |C-03865 |1       |
-|-   |[1.27mm ジャンパーピン](http://akizukidenshi.com/catalog/g/gP-03912/)  |P-03912 |1       |
-|外装で利用   |タミヤ プラバン 1.0mm    |-          |1       |
-|外装で利用   |タミヤ プラ材 5mm L形棒  |-          |1       |
-|外装で利用   |天然木シート  |-          |1       |
-|外装で利用   |プラスチック用接着剤、両面テープ、紙やすり  |-          |-       |
+|-   |[2.54mm 細ピンヘッダ](http://akizukidenshi.com/catalog/g/gC-06631/) - GR-CITRUSに利用 |C-06631 |1 |
+|-   |[2.54mm 細ピンソケット](http://akizukidenshi.com/catalog/g/gC-10073/) - GR-CITRUSに利用|C-10073 |2 |
+|-   |[2.54mm ピンソケット](http://akizukidenshi.com/catalog/g/gC-05779/) - OLEDに利用|C-05779 |1 |
+|-   |[1.27mm ピンヘッダ](http://akizukidenshi.com/catalog/g/gC-03865/) - GR-CITRUSのJP2に利用 |C-03865 |1       |
+|-   |[1.27mm ジャンパーピン](http://akizukidenshi.com/catalog/g/gP-03912/) - GR-CITRUSのJP2に利用 |P-03912 |1       |
 
-
+### Case
+タミヤ 1mm厚 プラバンで箱を作り天然木シートでラッピングしています。  
+OLED部分は2mm厚の透明アクリルでカバーしています。   
 
 ## Build instructions
-詳細な手順は準備中です。
-
-### RN42 setup
-[RN42](http://www.microchip.com/wwwproducts/en/en558330)をシリアルでつなぎモード設定を行います。  
-RN42に対して以下のコマンドを入力してください。（#文字以降は入力不要）
-
-```
-$$$               # CMD mode
-S~,6              # HID
-SH,0200           # Keyboard
-SM,6              # Pairing mode
-SU,96             # 9600bps
-SN,PRESENStick    # Device name
-R,1               # reboot
-```
+### Prototyping
+ブレッドボードを利用したプロトタイピングはこちら。
 
 ### GR-CITRUS mruby custom firmware
 カスタマイズしたファームウェアを利用しています。  
 firmwareフォルダにあるcitrus_sketch.binをGR-CITRUSに書き込んでください。
 
-### main.rbの書き込み
+### Software
 main.rbをGR-CITRUSに書き込んでください。
