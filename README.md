@@ -34,7 +34,8 @@ OLED部分は2mm厚の透明アクリルでカバーしています。
 
 ## Build instructions
 ### Prototyping
-ブレッドボードを利用したプロトタイピングはこちら。
+ブレッドボードを利用したプロトタイプの作り方は[こちら](https://github.com/takjn/presenstick/wiki/Prototyping)。  
+実際の作品は同様の手順でユニバーサル基板に実装しています。
 
 ### GR-CITRUS mruby custom firmware
 カスタマイズしたファームウェアを利用しています。  
