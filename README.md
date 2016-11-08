@@ -28,10 +28,6 @@ OLEDを除き、秋月電子通商で購入できます。
 |-   |[1.27mm ピンヘッダ](http://akizukidenshi.com/catalog/g/gC-03865/) - GR-CITRUSのJP2に利用 |C-03865 |1       |
 |-   |[1.27mm ジャンパーピン](http://akizukidenshi.com/catalog/g/gP-03912/) - GR-CITRUSのJP2に利用 |P-03912 |1       |
 
-### Case
-タミヤ 1mm厚 プラバンで箱を作り天然木シートでラッピングしています。  
-OLED部分は2mm厚の透明アクリルでカバーしています。   
-
 ## Build instructions
 ### Prototyping
 ブレッドボードを利用したプロトタイプの作り方は[こちら](https://github.com/takjn/presenstick/wiki/Prototyping)。  
