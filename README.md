@@ -10,7 +10,7 @@ OLEDを除き、秋月電子通商で購入できます。
 
 |記号 |パーツ	                                               　　　|通販コード |数量|
 |:---|:----------------------------------------------------------|:----------------|:-------|
-|U1  |0.96インチ 128x64 I2C接続 OLEDディスプレイ SSD1306               |Amazonで購入可能   |1       |
+|U1  |0.96インチ 128x64 I2C接続 OLEDディスプレイ SSD1306               |Amazonやaitendoで購入可能   |1       |
 |U2  |[昇圧型DCDCコンバータ 3.3V](http://akizukidenshi.com/catalog/g/gM-05720/) |M-05720 |1       |
 |U3  |[GR-CITRUS](http://akizukidenshi.com/catalog/g/gK-11217/)  |K-11217 |1       |
 |U4  |[RN-42-I/RM](http://akizukidenshi.com/catalog/g/gM-07612/) |M-07612 |1       |

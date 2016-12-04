@@ -325,6 +325,8 @@ end
 class BluetoothKeyboard
     RIGHT_ARROW = 0x4F
     LEFT_ARROW = 0x50
+    DOWN_ARROW = 0x51
+    UP_ARROW = 0x52
 
     @@serial = nil
     def self.init
